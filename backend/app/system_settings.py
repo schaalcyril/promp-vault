@@ -44,7 +44,8 @@ def jwks_url(config):
 def check(config):
     base=config.internal_issuer or config.issuer
     try:
-        with httpx.Client(timeout=4,follow_redirects=False,trust_env=False) as client:
+        from .tls import oidc_ssl_context
+        with httpx.Client(timeout=4,follow_redirects=False,trust_env=False,verify=oidc_ssl_context()) as client:
             def fetch(url):
                 with client.stream('GET',url) as response:
                     response.raise_for_status();body=b''

@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: prompt-vault
   namespace: prompt-vault
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
 spec:
   ingressClassName: ${INGRESS_CLASS}
   tls:

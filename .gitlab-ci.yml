@@ -38,37 +38,57 @@ build_images:
         docker push "$CI_REGISTRY_IMAGE/web:$CI_COMMIT_SHA"
       fi
 
-deploy_production:
+deploy_local_k3s:
   stage: deploy
-  image: alpine:3.22
-  resource_group: prompt-vault-production
+  image: alpine:3.24
+  resource_group: prompt-vault-local-k3s
   environment:
-    name: production
+    name: local/k3s
     url: https://$APP_HOST
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
       when: manual
+  variables:
+    APP_HOST: prompt-vault.home.arpa
+    TLS_SECRET: prompt-vault-local-tls
+    KAS_CA_CERTIFICATE: config/certificates/gitlab-local.crt
+    INGRESS_CLASS: traefik
+    KUBE_CONTEXT: infra/kube-gitlab-agent:k3s
   before_script:
-    - apk add --no-cache kubectl gettext jq
-    - export KUBECONFIG="$KUBE_CONFIG"
+    - apk add --no-cache kubectl gettext jq ca-certificates
+    - |
+      set -eu
+      : "${KUBECONFIG:?Kubeconfig injecté par l’agent GitLab requis; vérifier ci_access}"
+      test -r "$KUBECONFIG"
+      kubectl config get-contexts
+      : "${KUBE_CONTEXT:?Contexte requis au format groupe/projet:nom-agent}"
+      kubectl config use-context "$KUBE_CONTEXT"
+      # Certificat public de confiance pour le proxy KAS du GitLab local.
+      # Ne jamais désactiver la vérification TLS.
+      if [ -n "${KAS_CA_CERTIFICATE:-}" ]; then
+        test -r "$KAS_CA_CERTIFICATE"
+        agent_cluster=$(kubectl config view --minify -o jsonpath='{.contexts[0].context.cluster}')
+        kubectl config set-cluster "$agent_cluster" --certificate-authority="$KAS_CA_CERTIFICATE" --embed-certs=true
+      fi
   script:
     - |
       set -eu
-      : "${KUBE_CONFIG:?Variable GitLab de type File requise}"
       : "${APP_HOST:?DNS application requis}"
       : "${INGRESS_CLASS:?Classe Ingress requise}"
       : "${TLS_SECRET:?Secret TLS requis}"
-      export OIDC_ORIGIN=$(jq -er '.settings.issuer | capture("^(?<origin>https://[^/]+)").origin' config/application.json)
+      OIDC_ORIGIN=$(jq -er '.settings.issuer | capture("^(?<origin>https://[^/]+)").origin' config/application.json)
+      export OIDC_ORIGIN
       test -n "$OIDC_ORIGIN"
     - kubectl -n prompt-vault get secret prompt-vault-superadmin gitlab-registry "$TLS_SECRET" > /dev/null
     - mkdir -p rendered
+    - kubectl -n prompt-vault create configmap prompt-vault-oidc-ca --from-file=keycloak-local-ca.crt=config/certificates/keycloak-local-ca.crt --dry-run=client -o yaml > rendered/oidc-ca.yaml
     - kubectl -n prompt-vault create configmap prompt-vault-config --from-file=application.json=config/application.json --dry-run=client -o yaml > rendered/application.yaml
     - |
       for file in configmaps workloads ingress; do
         envsubst '${CI_REGISTRY_IMAGE} ${CI_COMMIT_SHA} ${CI_PIPELINE_ID} ${APP_HOST} ${OIDC_ORIGIN} ${INGRESS_CLASS} ${TLS_SECRET}' < "deploy/production/$file.yaml" > "rendered/$file.yaml"
       done
-    - kubectl apply --dry-run=server -f rendered/application.yaml -f rendered/configmaps.yaml -f rendered/workloads.yaml -f rendered/ingress.yaml > /dev/null
-    - kubectl apply -f rendered/application.yaml -f rendered/configmaps.yaml -f rendered/workloads.yaml
+    - kubectl apply --dry-run=server -f rendered/oidc-ca.yaml -f rendered/application.yaml -f rendered/configmaps.yaml -f rendered/workloads.yaml -f rendered/ingress.yaml > /dev/null
+    - kubectl apply -f rendered/oidc-ca.yaml -f rendered/application.yaml -f rendered/configmaps.yaml -f rendered/workloads.yaml
     - kubectl -n prompt-vault rollout status deployment/prompt-vault-api --timeout=700s
     - kubectl -n prompt-vault rollout status deployment/prompt-vault-web --timeout=180s
     - kubectl apply -f rendered/ingress.yaml

@@ -36,7 +36,9 @@ def administrator(user=Security(current_user)):
     return user
 
 @lru_cache(maxsize=8)
-def key_client(url):return PyJWKClient(url,timeout=5)
+def key_client(url):
+    from .tls import oidc_ssl_context
+    return PyJWKClient(url,timeout=5,ssl_context=oidc_ssl_context())
 
 def super_administrator(user=Security(current_user)):
     if user.get('authentication')!='local' or 'superadmin' not in user['roles']:

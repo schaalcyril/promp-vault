@@ -1,7 +1,37 @@
-# Déploiement GitLab/Kubernetes sans BDD
+# Déploiement GitLab vers K3s local, sans BDD
 
 La pipeline `.gitlab-ci.yml` contient directement les commandes, sans script shell
 séparé. PostgreSQL, PVC, StorageClass et mode bootstrap ont été retirés.
+
+## Connexion par l’agent GitLab
+
+Le job manuel `deploy_local_k3s` utilise le kubeconfig `KUBECONFIG` injecté par
+GitLab et sélectionne explicitement `KUBE_CONTEXT`. Ne pas créer de variable
+`KUBECONFIG` et supprimer l’ancienne variable `KUBE_CONFIG` si elle existe.
+Aucun kubeconfig administrateur du poste n’est envoyé à la CI.
+
+Dans GitLab → Operate → Kubernetes clusters, relever le nom de l’agent et le
+projet qui le porte. Le contexte est `groupe/projet:nom-agent` : le nom du
+Deployment ou du namespace Kubernetes ne suffit pas à le déterminer.
+Le job affiche les contextes disponibles avant de sélectionner celui demandé.
+
+L’agent `k3s` est enregistré dans `infra/kube-gitlab-agent`. Le contexte
+`infra/kube-gitlab-agent:k3s` est configuré par défaut dans le job.
+Dans le dépôt `infra/kube-gitlab-agent`, ajouter ou compléter le fichier
+`.gitlab/agents/k3s/config.yaml` sur sa branche par défaut pour autoriser l’application :
+
+```yaml
+ci_access:
+  projects:
+    - id: infra/prompt-anonymizer
+```
+
+Ne pas installer un second agent : utiliser celui déjà présent dans
+`gitlab-agent-k3s`. La configuration du projet de l’agent reste à son emplacement
+actuel. Les droits Kubernetes de cet agent doivent permettre les opérations
+applicatives dans `prompt-vault` décrites plus bas.
+
+Référence : https://docs.gitlab.com/user/clusters/agent/ci_cd_workflow/
 
 ## Fichiers de déploiement
 
@@ -55,9 +85,10 @@ Variables GitLab CI/CD :
 
 | Variable | Contenu |
 |---|---|
-| KUBE_CONFIG | Variable protégée de type File : kubeconfig du compte de déploiement |
+| KUBE_CONTEXT | `infra/kube-gitlab-agent:k3s` par défaut dans le job ; surcharge possible |
+| KAS_CA_CERTIFICATE | Variable de type File : certificat public PEM de confiance du GitLab/KAS local, nécessaire si autosigné |
 | APP_HOST | DNS application, sans protocole |
-| INGRESS_CLASS | Classe du contrôleur Ingress |
+| INGRESS_CLASS | `traefik` par défaut dans le job ; surcharge possible |
 | TLS_SECRET | Nom du Secret TLS déjà créé |
 
 Keycloak et les règles sont définis dans le fichier versionné, pas dans des variables
@@ -67,12 +98,37 @@ si seule la configuration change. Un simple changement d’un fichier monté ou 
 Secret n’est jamais un rechargement à chaud.
 
 Runner build : Docker-in-Docker avec TLS, mode privilégié et `/certs/client` partagé.
-Runner déploiement : accès API Kubernetes, droits limités au namespace (application
+Runner déploiement : accès au proxy KAS de GitLab ; agent avec droits limités au namespace (application
 et lecture des Deployments, Services, ConfigMaps, Ingress, lecture des Secrets requis).
-Protéger branche principale et environnement production. Le job de déploiement
+Protéger la branche principale et, si la fonctionnalité est disponible, l’environnement `local/k3s`.
+Les variables doivent être accessibles à cet environnement (portée `local/k3s` ou `*`). Le job de déploiement
 reste manuel ; publication des images uniquement depuis la branche principale.
 Les builds n’utilisent pas GitHub : Docker Hub, PyPI et npm ; déploiement : dépôts
 Alpine pour kubectl, gettext et jq. Adapter la version kubectl à celle du cluster.
+
+## Points spécifiques au poste K3s
+
+- L’agent est un tunnel d’accès Kubernetes ; il ne fournit ni registre d’images,
+  ni Keycloak, ni certificats applicatifs.
+- `APP_HOST` doit résoudre vers le poste et être couvert par `TLS_SECRET`.
+  Traefik est la classe observée sur ce cluster. Configurer son accès HTTPS et
+  ses délais pour accepter les traitements longs ; le manifeste générique ne
+  configure pas globalement Traefik.
+- `config/application.json` utilise le realm local
+  `https://prompt-vault.home.arpa/auth/realms/prompt-vault` ;
+  ne pas copier les adresses `localhost` de Docker Compose dans Kubernetes.
+- Le registre GitLab doit être activé : la CI doit fournir `CI_REGISTRY` et
+  `CI_REGISTRY_IMAGE`. Son nom DNS doit fonctionner depuis le runner, DinD et
+  le nœud K3s. Un nom résolu en `127.0.0.1` dans un conteneur désigne ce conteneur,
+  pas le poste hôte. Même vérification pour le GitLab/KAS et Keycloak.
+- Le certificat `KAS_CA_CERTIFICATE` ne configure que kubectl dans le job.
+  La confiance du runner envers GitLab, celle de DinD envers le registre et
+  celle de containerd/K3s envers le registre se configurent séparément.
+  Ne pas utiliser de registre non sécurisé ni désactiver la vérification TLS.
+- Après les tests et le build, lancer manuellement `deploy_local_k3s` sur la
+  branche principale protégée. Le job vérifie les Secrets existants, valide les
+  manifests côté serveur puis attend les deux Deployments. Il ne crée pas de
+  mot de passe ni de Secret factice.
 
 ## Exploitation et limites
 
@@ -103,3 +159,53 @@ Conserver les PVC et sauvegardes pour retour arrière tant que nécessaire. La
 pipeline ne supprime aucune donnée ni ancien Secret automatiquement.
 
 Aucun déploiement sur le cluster d’entreprise n’est effectué depuis ce poste.
+
+## Paramètres locaux finalisés le 23 octobre 2026
+
+Le job définit `APP_HOST=prompt-vault.home.arpa`,
+`TLS_SECRET=prompt-vault-local-tls` et le certificat public GitLab par défaut.
+Il utilise Alpine 3.24 pour kubectl 1.36, adapté au cluster 1.36.
+La ConfigMap `prompt-vault-oidc-ca` est générée depuis
+`config/certificates/keycloak-local-ca.crt` et montée dans l’API.
+`OIDC_CA_FILE` ajoute cette CA aux autorités système pour la découverte OIDC et
+les JWKS ; un fichier absent ou invalide ne désactive jamais la vérification TLS.
+Les certificats versionnés sont publics et propres au laboratoire local.
+Pour un autre environnement, remplacer issuer, certificats et paramètres Ingress.
+
+Le Secret `prompt-vault-superadmin` a été créé depuis le hash local existant.
+Le Secret `gitlab-registry` doit encore être créé avec un deploy token durable
+`read_registry`, une fois le registre activé. Aucun token n’est versionné.
+
+Prérequis administrateur encore à effectuer/vérifier :
+
+- Activer le registre dans `/etc/gitlab/gitlab.rb` avec
+  `registry_external_url 'https://registry.gitlab.home.arpa:5005'`, puis reconfigurer GitLab.
+- Autoriser ce projet dans `.gitlab/agents/k3s/config.yaml` du dépôt
+  `infra/kube-gitlab-agent` via `ci_access.projects`.
+- Adapter le runner Docker au DinD TLS de la pipeline : mode privilégié, volume
+  `/certs/client` partagé et certificat du registre monté dans DinD. Évaluer ces
+  droits pour un runner dédié au projet ; son état actuel ne satisfait pas ces conditions.
+- Configurer la confiance containerd/K3s envers le registre autosigné, sans
+  `insecure_skip_verify`, et préparer le Secret de lecture des images.
+
+Ne pas lancer la pipeline en supposant que ces prérequis ont été appliqués.
+
+## Runner local vérifié
+
+Le 23 octobre 2026, DinD 28.5.1 a été testé avec un client non privilégié via TLS.
+Le daemon contacte le registre `registry.gitlab.home.arpa:5005` et son service
+d’authentification sur GitLab 8090 avec validation des certificats.
+L’accès anonyme est refusé comme attendu ; push authentifié non encore testé.
+
+Le runner conserve `privileged=false`, avec `services_privileged=true` limité à
+`docker:28.5.1-dind` et `docker.io/library/docker:28.5.1-dind`.
+Volumes ajoutés : `/certs/client` et
+`/srv/gitlab-runner/config/docker-certs:/etc/docker/certs.d:ro`.
+Les extra_hosts des jobs/services résolvent GitLab et son registre vers
+`192.168.1.63`, car l’accès au port 5005 via host-gateway échouait.
+Les fichiers de sauvegarde privés sont à côté du config.toml du runner.
+
+Le fichier `deploy/local-k3s/registries.example.yaml` prépare la confiance K3s
+(copie/fusion administrateur requise). `registry-ca.crt` contient exclusivement
+les certificats publics Registry et GitLab, sans clé privée.
+`agent-ci-access.example.yaml` est à fusionner dans le projet propriétaire de l’agent.

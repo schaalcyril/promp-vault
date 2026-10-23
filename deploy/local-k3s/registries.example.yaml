@@ -1,0 +1,6 @@
+# Configuration containerd/K3s sur le nœud, pas un manifeste kubectl.
+# À fusionner dans /etc/rancher/k3s/registries.yaml si le fichier existe déjà.
+configs:
+  "registry.gitlab.home.arpa:5005":
+    tls:
+      ca_file: /etc/rancher/k3s/registry-ca.crt

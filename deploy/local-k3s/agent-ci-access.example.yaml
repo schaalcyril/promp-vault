@@ -1,0 +1,5 @@
+# Dans infra/kube-gitlab-agent : .gitlab/agents/k3s/config.yaml
+# Fusionner avec les éventuels accès existants.
+ci_access:
+  projects:
+    - id: infra/prompt-anonymizer

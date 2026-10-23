@@ -1,7 +1,7 @@
 {
   "version": 1,
   "settings": {
-    "issuer": "https://sso.example.internal/realms/prompt-vault",
+    "issuer": "https://prompt-vault.home.arpa/auth/realms/prompt-vault",
     "internal_issuer": "",
     "client_id": "prompt-vault-web",
     "audience": "prompt-vault-api",
