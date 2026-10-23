@@ -1,0 +1,9 @@
+import {useEffect,useState} from 'react';
+import {authorizedFetch} from './auth';
+type Row={id:number;definition:{name:string;vlan:number|null;cidrs:string[];enabled:boolean}};
+export default function AdminNetworks(){
+ const [rows,setRows]=useState<Row[]>([]),[address,setAddress]=useState(''),[status,setStatus]=useState('Chargement…'),[busy,setBusy]=useState(false);
+ useEffect(()=>{void authorizedFetch('/api/admin/networks').then(async r=>{if(!r.ok)throw new Error('Chargement impossible');setRows(await r.json());setStatus('');}).catch(e=>setStatus(e.message));},[]);
+ async function test(){setBusy(true);try{const r=await authorizedFetch('/api/admin/networks/test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address})});const d=await r.json();if(!r.ok)throw new Error(d.detail||'Test impossible');setStatus(d.matches.length?d.matches.map((m:{name:string;cidr:string})=>`${m.name} — ${m.cidr}`).join(' ; '):'Aucun réseau actif correspondant.');}catch(e){setStatus(e instanceof Error?e.message:'Test impossible');}finally{setBusy(false);}}
+ return <div className="admin-rules"><h2>Réseaux et VLAN déployés</h2><p className="notice">Référentiel en lecture seule. Les modifications nécessitent un redéploiement.</p>{!rows.length&&<p>Aucun réseau déclaré.</p>}{rows.map(row=><section key={row.id}><h3>{row.definition.name}</h3><p>{row.definition.enabled?'Actif':'Inactif'} · {row.definition.vlan===null?'Sans numéro VLAN':`VLAN ${row.definition.vlan}`}</p><ul>{row.definition.cidrs.map(cidr=><li key={cidr}>{cidr}</li>)}</ul></section>)}<section className="rule-editor"><label>Adresse IP à tester<input maxLength={45} value={address} onChange={e=>setAddress(e.target.value)}/></label><button disabled={busy||!address.trim()} onClick={()=>void test()}>Tester l’adresse</button></section><p role="status">{busy?'Test en cours…':status}</p></div>;
+}

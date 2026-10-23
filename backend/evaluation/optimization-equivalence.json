@@ -1,0 +1,26 @@
+{
+  "mixed-fr": {
+    "compared": 720,
+    "removed": 0,
+    "added": 0,
+    "same_text": true
+  },
+  "mixed-en": {
+    "compared": 900,
+    "removed": 0,
+    "added": 0,
+    "same_text": true
+  },
+  "varied": {
+    "compared": 21,
+    "removed": 0,
+    "added": 0,
+    "same_text": true
+  },
+  "boundaries": {
+    "compared": 2,
+    "removed": 0,
+    "added": 0,
+    "same_text": true
+  }
+}

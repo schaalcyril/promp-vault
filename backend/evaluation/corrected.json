@@ -1,0 +1,379 @@
+{
+  "note": "Synthetic development corpus, not representative production accuracy. Challenge fixtures are not an independent blind holdout.",
+  "cases": 30,
+  "metrics": {
+    "all": {
+      "tp": 32,
+      "fp": 0,
+      "fn": 0,
+      "covered": 32,
+      "expected": 32,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "regression": {
+      "tp": 27,
+      "fp": 0,
+      "fn": 0,
+      "covered": 27,
+      "expected": 27,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:IP": {
+      "tp": 7,
+      "fp": 0,
+      "fn": 0,
+      "covered": 7,
+      "expected": 7,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:MAC": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "covered": 1,
+      "expected": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:FQDN": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "covered": 2,
+      "expected": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:HOSTNAME": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "covered": 1,
+      "expected": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:EMAIL": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "covered": 2,
+      "expected": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:PERSON": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "covered": 2,
+      "expected": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:PASSWORD": {
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "covered": 6,
+      "expected": 6,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:TOKEN": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "covered": 3,
+      "expected": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:USERNAME": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "covered": 4,
+      "expected": 4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:PRIVATE_KEY": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "covered": 1,
+      "expected": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:IBAN": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "covered": 1,
+      "expected": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:CARD": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "covered": 1,
+      "expected": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "challenge": {
+      "tp": 5,
+      "fp": 0,
+      "fn": 0,
+      "covered": 5,
+      "expected": 5,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:ORGANIZATION": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "covered": 1,
+      "expected": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  },
+  "peak_rss_mib": 322.7,
+  "results": [
+    {
+      "name": "ipv4-cidr",
+      "split": "regression",
+      "latency_ms": 84.32,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "ipv6",
+      "split": "regression",
+      "latency_ms": 21.81,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "ipv6-cidr",
+      "split": "regression",
+      "latency_ms": 23.64,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "mac",
+      "split": "regression",
+      "latency_ms": 27.93,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "fqdn",
+      "split": "regression",
+      "latency_ms": 16.97,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "host",
+      "split": "regression",
+      "latency_ms": 20.05,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "email",
+      "split": "regression",
+      "latency_ms": 15.34,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "person-fr",
+      "split": "regression",
+      "latency_ms": 18.12,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "person-en",
+      "split": "regression",
+      "latency_ms": 14.46,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "password",
+      "split": "regression",
+      "latency_ms": 13.21,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "json-secret",
+      "split": "regression",
+      "latency_ms": 27.08,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "yaml-secret",
+      "split": "regression",
+      "latency_ms": 20.3,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "xml-secret",
+      "split": "regression",
+      "latency_ms": 13.55,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "env-secret",
+      "split": "regression",
+      "latency_ms": 22.16,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "bearer",
+      "split": "regression",
+      "latency_ms": 15.88,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "uri",
+      "split": "regression",
+      "latency_ms": 15.43,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "ad",
+      "split": "regression",
+      "latency_ms": 11.98,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "username",
+      "split": "regression",
+      "latency_ms": 16.39,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "private-key",
+      "split": "regression",
+      "latency_ms": 16.91,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "iban",
+      "split": "regression",
+      "latency_ms": 16.89,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "card",
+      "split": "regression",
+      "latency_ms": 14.74,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "technology",
+      "split": "regression",
+      "latency_ms": 20.52,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "filename",
+      "split": "regression",
+      "latency_ms": 16.48,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "invalid-ip",
+      "split": "regression",
+      "latency_ms": 18.1,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "username-negative",
+      "split": "regression",
+      "latency_ms": 18.62,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "unicode",
+      "split": "regression",
+      "latency_ms": 16.58,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "holdout-json",
+      "split": "challenge",
+      "latency_ms": 17.37,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "holdout-ip",
+      "split": "challenge",
+      "latency_ms": 17.06,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "unknown-secret",
+      "split": "challenge",
+      "latency_ms": 21.67,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "client-name",
+      "split": "challenge",
+      "latency_ms": 16.0,
+      "missing": [],
+      "extra": []
+    }
+  ]
+}

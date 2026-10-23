@@ -1,0 +1,74 @@
+stages: [test, build, deploy]
+
+frontend_tests:
+  stage: test
+  image: node:22-alpine
+  script:
+    - npm --prefix frontend ci
+    - npm --prefix frontend test
+    - npm --prefix frontend run build
+
+build_images:
+  stage: build
+  image: docker:28.5.1-cli
+  services:
+    - name: docker:28.5.1-dind
+      alias: docker
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: /certs
+    DOCKER_TLS_VERIFY: '1'
+    DOCKER_CERT_PATH: /certs/client
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHA" backend
+    - docker build --pull -t "$CI_REGISTRY_IMAGE/web:$CI_COMMIT_SHA" frontend
+    - docker run --rm --network none "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHA" python -m pytest -q -p no:cacheprovider
+    - |
+      # docker cp works with DinD without bind mounts from the runner filesystem.
+      container=$(docker create --network none "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHA" python -m app.configuration /tmp/application.json)
+      docker cp config/application.json "$container:/tmp/application.json"
+      docker start -a "$container"
+      code=$(docker inspect --format '{{.State.ExitCode}}' "$container")
+      docker rm "$container"
+      test "$code" = 0
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        printf '%s' "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+        docker push "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHA"
+        docker push "$CI_REGISTRY_IMAGE/web:$CI_COMMIT_SHA"
+      fi
+
+deploy_production:
+  stage: deploy
+  image: alpine:3.22
+  resource_group: prompt-vault-production
+  environment:
+    name: production
+    url: https://$APP_HOST
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
+      when: manual
+  before_script:
+    - apk add --no-cache kubectl gettext jq
+    - export KUBECONFIG="$KUBE_CONFIG"
+  script:
+    - |
+      set -eu
+      : "${KUBE_CONFIG:?Variable GitLab de type File requise}"
+      : "${APP_HOST:?DNS application requis}"
+      : "${INGRESS_CLASS:?Classe Ingress requise}"
+      : "${TLS_SECRET:?Secret TLS requis}"
+      export OIDC_ORIGIN=$(jq -er '.settings.issuer | capture("^(?<origin>https://[^/]+)").origin' config/application.json)
+      test -n "$OIDC_ORIGIN"
+    - kubectl -n prompt-vault get secret prompt-vault-superadmin gitlab-registry "$TLS_SECRET" > /dev/null
+    - mkdir -p rendered
+    - kubectl -n prompt-vault create configmap prompt-vault-config --from-file=application.json=config/application.json --dry-run=client -o yaml > rendered/application.yaml
+    - |
+      for file in configmaps workloads ingress; do
+        envsubst '${CI_REGISTRY_IMAGE} ${CI_COMMIT_SHA} ${CI_PIPELINE_ID} ${APP_HOST} ${OIDC_ORIGIN} ${INGRESS_CLASS} ${TLS_SECRET}' < "deploy/production/$file.yaml" > "rendered/$file.yaml"
+      done
+    - kubectl apply --dry-run=server -f rendered/application.yaml -f rendered/configmaps.yaml -f rendered/workloads.yaml -f rendered/ingress.yaml > /dev/null
+    - kubectl apply -f rendered/application.yaml -f rendered/configmaps.yaml -f rendered/workloads.yaml
+    - kubectl -n prompt-vault rollout status deployment/prompt-vault-api --timeout=700s
+    - kubectl -n prompt-vault rollout status deployment/prompt-vault-web --timeout=180s
+    - kubectl apply -f rendered/ingress.yaml

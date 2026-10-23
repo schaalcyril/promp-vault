@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "settings": {
+    "issuer": "https://sso.example.internal/realms/prompt-vault",
+    "internal_issuer": "",
+    "client_id": "prompt-vault-web",
+    "audience": "prompt-vault-api",
+    "user_role": "user",
+    "admin_role": "admin",
+    "default_language": "auto",
+    "max_text_mib": 10
+  },
+  "rules": [],
+  "networks": []
+}

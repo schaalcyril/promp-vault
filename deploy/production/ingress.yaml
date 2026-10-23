@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prompt-vault
+  namespace: prompt-vault
+spec:
+  ingressClassName: ${INGRESS_CLASS}
+  tls:
+  - hosts:
+    - ${APP_HOST}
+    secretName: ${TLS_SECRET}
+  rules:
+  - host: ${APP_HOST}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prompt-vault-web
+            port:
+              number: 80

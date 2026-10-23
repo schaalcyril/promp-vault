@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "settings": {
+    "issuer": "http://localhost:3080/auth/realms/prompt-vault",
+    "internal_issuer": "http://keycloak:8080/auth/realms/prompt-vault",
+    "client_id": "prompt-vault-web",
+    "audience": "prompt-vault-api",
+    "user_role": "user",
+    "admin_role": "admin",
+    "default_language": "auto",
+    "max_text_mib": 10
+  },
+  "rules": [],
+  "networks": []
+}

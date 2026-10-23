@@ -1,0 +1,23 @@
+.venv/
+node_modules/
+dist/
+__pycache__/
+.pytest_cache/
+.env
+.local/
+
+# Delivery archives and generated manifests
+*.zip
+*.tar.gz*
+*.zip.sha256
+*archive-parties.sha256
+*zip.sha256
+rendered/
+
+# Generated compiler metadata and private environment overrides
+*.tsbuildinfo
+.env.*
+!.env.example
+
+# Local administrator credential exports
+superadmin*.json

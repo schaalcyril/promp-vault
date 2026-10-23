@@ -1,0 +1,642 @@
+{
+  "note": "Synthetic development corpus, not representative production accuracy. Challenge fixtures are not an independent blind holdout.",
+  "cases": 30,
+  "metrics": {
+    "all": {
+      "tp": 11,
+      "fp": 21,
+      "fn": 21,
+      "covered": 21,
+      "expected": 32,
+      "precision": 0.3438,
+      "recall": 0.3438,
+      "f1": 0.3438
+    },
+    "regression": {
+      "tp": 11,
+      "fp": 18,
+      "fn": 16,
+      "covered": 19,
+      "expected": 27,
+      "precision": 0.3793,
+      "recall": 0.4074,
+      "f1": 0.3929
+    },
+    "category:IP": {
+      "tp": 2,
+      "fp": 4,
+      "fn": 5,
+      "covered": 0,
+      "expected": 0,
+      "precision": 0.3333,
+      "recall": 0.2857,
+      "f1": 0.3077
+    },
+    "category:MAC": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "covered": 0,
+      "expected": 0,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "category:FQDN": {
+      "tp": 2,
+      "fp": 3,
+      "fn": 0,
+      "covered": 0,
+      "expected": 0,
+      "precision": 0.4,
+      "recall": 1.0,
+      "f1": 0.5714
+    },
+    "category:HOSTNAME": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "covered": 0,
+      "expected": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:EMAIL": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "covered": 0,
+      "expected": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667
+    },
+    "category:PERSON": {
+      "tp": 2,
+      "fp": 3,
+      "fn": 0,
+      "covered": 0,
+      "expected": 0,
+      "precision": 0.4,
+      "recall": 1.0,
+      "f1": 0.5714
+    },
+    "category:PASSWORD": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 4,
+      "covered": 0,
+      "expected": 0,
+      "precision": 1.0,
+      "recall": 0.3333,
+      "f1": 0.5
+    },
+    "category:SECRET": {
+      "tp": 0,
+      "fp": 5,
+      "fn": 0,
+      "covered": 0,
+      "expected": 0,
+      "precision": 0.0,
+      "recall": null,
+      "f1": 0.0
+    },
+    "category:LOCATION": {
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "covered": 0,
+      "expected": 0,
+      "precision": 0.0,
+      "recall": null,
+      "f1": 0.0
+    },
+    "category:TOKEN": {
+      "tp": 0,
+      "fp": 1,
+      "fn": 3,
+      "covered": 0,
+      "expected": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "category:USERNAME": {
+      "tp": 0,
+      "fp": 4,
+      "fn": 4,
+      "covered": 0,
+      "expected": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "category:PRIVATE_KEY": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "covered": 0,
+      "expected": 0,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "category:IBAN": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "covered": 0,
+      "expected": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "category:CARD": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "covered": 0,
+      "expected": 0,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "challenge": {
+      "tp": 0,
+      "fp": 3,
+      "fn": 5,
+      "covered": 2,
+      "expected": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "category:ORGANIZATION": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "covered": 0,
+      "expected": 0,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  },
+  "peak_rss_mib": 324.7,
+  "results": [
+    {
+      "name": "ipv4-cidr",
+      "split": "regression",
+      "latency_ms": 80.78,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "ipv6",
+      "split": "regression",
+      "latency_ms": 14.21,
+      "missing": [
+        [
+          13,
+          25,
+          "IP"
+        ],
+        [
+          36,
+          48,
+          "IP"
+        ]
+      ],
+      "extra": [
+        [
+          13,
+          23,
+          "IP"
+        ],
+        [
+          36,
+          42,
+          "IP"
+        ]
+      ]
+    },
+    {
+      "name": "ipv6-cidr",
+      "split": "regression",
+      "latency_ms": 9.85,
+      "missing": [
+        [
+          6,
+          24,
+          "IP"
+        ],
+        [
+          29,
+          40,
+          "IP"
+        ]
+      ],
+      "extra": [
+        [
+          29,
+          39,
+          "IP"
+        ]
+      ]
+    },
+    {
+      "name": "mac",
+      "split": "regression",
+      "latency_ms": 14.94,
+      "missing": [
+        [
+          14,
+          31,
+          "MAC"
+        ]
+      ],
+      "extra": []
+    },
+    {
+      "name": "fqdn",
+      "split": "regression",
+      "latency_ms": 8.85,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "host",
+      "split": "regression",
+      "latency_ms": 10.74,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "email",
+      "split": "regression",
+      "latency_ms": 145.41,
+      "missing": [
+        [
+          10,
+          33,
+          "EMAIL"
+        ]
+      ],
+      "extra": [
+        [
+          0,
+          33,
+          "PERSON"
+        ]
+      ]
+    },
+    {
+      "name": "person-fr",
+      "split": "regression",
+      "latency_ms": 11.59,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "person-en",
+      "split": "regression",
+      "latency_ms": 8.75,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "password",
+      "split": "regression",
+      "latency_ms": 9.09,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "json-secret",
+      "split": "regression",
+      "latency_ms": 17.69,
+      "missing": [
+        [
+          14,
+          34,
+          "PASSWORD"
+        ]
+      ],
+      "extra": [
+        [
+          14,
+          34,
+          "SECRET"
+        ]
+      ]
+    },
+    {
+      "name": "yaml-secret",
+      "split": "regression",
+      "latency_ms": 8.36,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "xml-secret",
+      "split": "regression",
+      "latency_ms": 8.34,
+      "missing": [
+        [
+          10,
+          30,
+          "PASSWORD"
+        ]
+      ],
+      "extra": [
+        [
+          10,
+          16,
+          "LOCATION"
+        ]
+      ]
+    },
+    {
+      "name": "env-secret",
+      "split": "regression",
+      "latency_ms": 12.78,
+      "missing": [
+        [
+          22,
+          41,
+          "TOKEN"
+        ]
+      ],
+      "extra": [
+        [
+          22,
+          41,
+          "SECRET"
+        ]
+      ]
+    },
+    {
+      "name": "bearer",
+      "split": "regression",
+      "latency_ms": 9.93,
+      "missing": [
+        [
+          22,
+          38,
+          "TOKEN"
+        ]
+      ],
+      "extra": [
+        [
+          0,
+          13,
+          "PERSON"
+        ],
+        [
+          15,
+          38,
+          "TOKEN"
+        ]
+      ]
+    },
+    {
+      "name": "uri",
+      "split": "regression",
+      "latency_ms": 7.68,
+      "missing": [
+        [
+          11,
+          16,
+          "USERNAME"
+        ],
+        [
+          17,
+          30,
+          "PASSWORD"
+        ]
+      ],
+      "extra": [
+        [
+          17,
+          30,
+          "SECRET"
+        ]
+      ]
+    },
+    {
+      "name": "ad",
+      "split": "regression",
+      "latency_ms": 9.32,
+      "missing": [
+        [
+          7,
+          19,
+          "USERNAME"
+        ]
+      ],
+      "extra": [
+        [
+          7,
+          20,
+          "USERNAME"
+        ]
+      ]
+    },
+    {
+      "name": "username",
+      "split": "regression",
+      "latency_ms": 8.04,
+      "missing": [
+        [
+          26,
+          37,
+          "USERNAME"
+        ]
+      ],
+      "extra": [
+        [
+          26,
+          38,
+          "USERNAME"
+        ]
+      ]
+    },
+    {
+      "name": "private-key",
+      "split": "regression",
+      "latency_ms": 10.46,
+      "missing": [
+        [
+          0,
+          62,
+          "PRIVATE_KEY"
+        ]
+      ],
+      "extra": [
+        [
+          0,
+          62,
+          "SECRET"
+        ]
+      ]
+    },
+    {
+      "name": "iban",
+      "split": "regression",
+      "latency_ms": 11.54,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "card",
+      "split": "regression",
+      "latency_ms": 9.84,
+      "missing": [
+        [
+          6,
+          25,
+          "CARD"
+        ]
+      ],
+      "extra": []
+    },
+    {
+      "name": "technology",
+      "split": "regression",
+      "latency_ms": 10.05,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "filename",
+      "split": "regression",
+      "latency_ms": 11.6,
+      "missing": [],
+      "extra": [
+        [
+          7,
+          19,
+          "FQDN"
+        ],
+        [
+          25,
+          38,
+          "FQDN"
+        ],
+        [
+          42,
+          48,
+          "FQDN"
+        ]
+      ]
+    },
+    {
+      "name": "invalid-ip",
+      "split": "regression",
+      "latency_ms": 10.89,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "username-negative",
+      "split": "regression",
+      "latency_ms": 9.0,
+      "missing": [],
+      "extra": [
+        [
+          14,
+          19,
+          "USERNAME"
+        ],
+        [
+          37,
+          46,
+          "USERNAME"
+        ]
+      ]
+    },
+    {
+      "name": "unicode",
+      "split": "regression",
+      "latency_ms": 8.41,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "name": "holdout-json",
+      "split": "challenge",
+      "latency_ms": 11.25,
+      "missing": [
+        [
+          12,
+          28,
+          "TOKEN"
+        ]
+      ],
+      "extra": [
+        [
+          12,
+          28,
+          "SECRET"
+        ]
+      ]
+    },
+    {
+      "name": "holdout-ip",
+      "split": "challenge",
+      "latency_ms": 7.76,
+      "missing": [
+        [
+          6,
+          23,
+          "IP"
+        ]
+      ],
+      "extra": [
+        [
+          6,
+          22,
+          "IP"
+        ]
+      ]
+    },
+    {
+      "name": "unknown-secret",
+      "split": "challenge",
+      "latency_ms": 11.96,
+      "missing": [
+        [
+          25,
+          30,
+          "USERNAME"
+        ],
+        [
+          33,
+          44,
+          "PASSWORD"
+        ]
+      ],
+      "extra": []
+    },
+    {
+      "name": "client-name",
+      "split": "challenge",
+      "latency_ms": 11.83,
+      "missing": [
+        [
+          10,
+          22,
+          "ORGANIZATION"
+        ]
+      ],
+      "extra": [
+        [
+          10,
+          22,
+          "PERSON"
+        ]
+      ]
+    }
+  ]
+}

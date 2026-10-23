@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prompt-vault-nginx
+  namespace: prompt-vault
+data:
+  nginx.conf: |
+    pid /tmp/nginx.pid;
+    error_log /dev/stderr warn;
+    events { worker_connections 1024; }
+    http {
+     include /etc/nginx/mime.types;
+     default_type application/octet-stream;
+     access_log off;
+     client_body_temp_path /tmp/client_temp;
+     proxy_temp_path /tmp/proxy_temp;
+     fastcgi_temp_path /tmp/fastcgi_temp;
+     uwsgi_temp_path /tmp/uwsgi_temp;
+     scgi_temp_path /tmp/scgi_temp;
+     server {
+      listen 8080;
+      root /usr/share/nginx/html;
+      client_max_body_size 61m;
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self'; connect-src 'self' ${OIDC_ORIGIN}; frame-src ${OIDC_ORIGIN}; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'" always;
+      add_header X-Content-Type-Options nosniff always;
+      location = /healthz { return 200 'ok'; }
+      location /api/ {
+       proxy_pass http://prompt-vault-api:8000;
+       proxy_request_buffering off;
+       proxy_buffering off;
+       proxy_read_timeout 600s;
+      }
+      location / { try_files $uri /index.html; }
+     }
+    }
