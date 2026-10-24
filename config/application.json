@@ -1,15 +1,57 @@
 {
-  "version": 1,
+  "version": 2,
   "settings": {
-    "issuer": "https://prompt-vault.home.arpa/auth/realms/prompt-vault",
-    "internal_issuer": "",
-    "client_id": "prompt-vault-web",
-    "audience": "prompt-vault-api",
-    "user_role": "user",
-    "admin_role": "admin",
     "default_language": "auto",
     "max_text_mib": 10
   },
-  "rules": [],
+  "rules": [
+    {
+      "enabled": true,
+      "definition": {
+        "name": "Exemple — serveurs fictifs",
+        "kind": "list",
+        "category": "SERVER",
+        "secret": false,
+        "case_sensitive": false,
+        "terms": [
+          "atlas-demo-01",
+          "orion-demo-02"
+        ]
+      }
+    },
+    {
+      "enabled": true,
+      "definition": {
+        "name": "Exemple — domaines fictifs",
+        "kind": "list",
+        "category": "DOMAIN",
+        "secret": false,
+        "terms": [
+          "intranet.example.test",
+          "api.example.test"
+        ]
+      }
+    },
+    {
+      "enabled": true,
+      "definition": {
+        "name": "Exemple — références de dossiers",
+        "kind": "regex",
+        "category": "CASE_ID",
+        "secret": false,
+        "pattern": "\\bDOS-DEMO-\\d{6}\\b"
+      }
+    },
+    {
+      "enabled": true,
+      "definition": {
+        "name": "Exemple — jetons fictifs non restaurables",
+        "kind": "regex",
+        "category": "TOKEN",
+        "secret": true,
+        "pattern": "\\bPV-DEMO-SECRET-[A-Z0-9]{12}\\b"
+      }
+    }
+  ],
   "networks": []
 }

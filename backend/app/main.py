@@ -7,12 +7,9 @@ from pydantic import BaseModel, Field
 import asyncio
 import json
 import time
-from .recovery import router as recovery_router
-from .system_settings import router as system_router, load as load_settings
-from . import rule_store, configuration, recovery
-from .admin import router as admin_router
+from .system_settings import load as load_settings
+from . import rule_store, configuration
 from .custom_rules import RuleExecutionError
-from .auth import current_user, administrator
 from .jobs import start, stop, warmup
 from .engine import detect, analyzer
 from contextlib import asynccontextmanager
@@ -20,19 +17,11 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(app):
     configuration.initialize()
-    recovery.initialize()
     analyzer()
     warmup()
-    try:
-        yield
-    finally:
-        recovery.clear_sessions()
+    yield
 
 app = FastAPI(title="Prompt Vault — pilote local", lifespan=lifespan,docs_url=None,redoc_url=None,openapi_url=None)
-app.include_router(admin_router)
-app.include_router(networks.router)
-app.include_router(system_router)
-app.include_router(recovery_router)
 semaphore = asyncio.Semaphore(1)
 MAX_SECONDS = 600
 LIMIT = 10 * 1024 * 1024
@@ -40,9 +29,7 @@ LIMIT = 10 * 1024 * 1024
 @app.middleware("http")
 async def protections(request: Request, call_next):
     if request.method in ("POST", "PUT", "PATCH"):
-        body_limit = 128 * 1024 if request.url.path.startswith(("/api/admin/", "/api/system/")) else LIMIT * 6 + 1024
-        if request.url.path.startswith("/api/recovery/"):
-            body_limit=4096
+        body_limit = LIMIT * 6 + 1024
         total = 0
         chunks = []
         async for chunk in request.stream():
@@ -70,19 +57,21 @@ class Input(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "mode": "deployment-config", "authentication": True}
+    return {"status": "ok", "mode": "deployment-config", "authentication": False}
 
 @app.post("/api/analyze")
-async def analyze(data: Input, user=Depends(current_user), rules=Depends(rule_store.active_rules), settings=Depends(load_settings), network_snapshot=Depends(networks.snapshot)):
+async def analyze(data: Input, rules=Depends(rule_store.active_rules), settings=Depends(load_settings), network_snapshot=Depends(networks.snapshot)):
     if len(data.text.encode("utf-8")) > settings['definition']['max_text_mib'] * 1024 * 1024:
         return JSONResponse({"detail": "Limite de taille configurée dépassée"}, status_code=413)
+    if semaphore.locked():
+        return JSONResponse({"detail":"Une analyse est déjà en cours. Réessayez ensuite."},status_code=429)
     async with semaphore:
         language_info={}
         hits = await run_in_threadpool(detect, data.text, data.language, custom_rules=rules,language_info=language_info)
     return {"detections": networks.annotate(data.text,hits,network_snapshot),"language_info":language_info}
 
 @app.post("/api/analyze-stream")
-async def analyze_stream(data: Input, user=Depends(current_user), rules=Depends(rule_store.active_rules), settings=Depends(load_settings), network_snapshot=Depends(networks.snapshot)):
+async def analyze_stream(data: Input, rules=Depends(rule_store.active_rules), settings=Depends(load_settings), network_snapshot=Depends(networks.snapshot)):
     if len(data.text.encode("utf-8")) > settings['definition']['max_text_mib'] * 1024 * 1024:
         return JSONResponse({"detail":"Limite de taille configurée dépassée"},status_code=413)
     if semaphore.locked():
@@ -116,13 +105,9 @@ async def analyze_stream(data: Input, user=Depends(current_user), rules=Depends(
             semaphore.release()
     return StreamingResponse(events(),media_type="application/x-ndjson",headers={"Cache-Control":"no-store","X-Accel-Buffering":"no"})
 
-@app.get("/api/me")
-def me(user=Depends(current_user)):
-    return user
-
-@app.get("/api/admin/status")
-def admin_status(user=Depends(administrator)):
-    return {"status":"ok","rules_editor_available":False}
+@app.get('/api/rules')
+def active_rule_catalogue():
+    return rule_store.public_catalogue()
 
 @app.exception_handler(RuleExecutionError)
 async def rule_error(request, exc):
@@ -131,4 +116,4 @@ async def rule_error(request, exc):
 @app.get('/api/config')
 def public_config():
     config=load_settings()['definition']
-    return {k:config[k] for k in ('issuer','client_id','default_language','max_text_mib')}
+    return {k:config[k] for k in ('default_language','max_text_mib')}

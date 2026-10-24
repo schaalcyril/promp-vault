@@ -38,8 +38,6 @@ def test_validation_does_not_echo_input(monkeypatch):
     from app.main import app
     from app.rule_store import active_rules
     monkeypatch.setitem(app.dependency_overrides,active_rules,lambda:[])
-    from app.auth import current_user
-    monkeypatch.setitem(app.dependency_overrides,current_user,lambda:{"id":"test","roles":["user"]})
     with TestClient(app) as client:
         response = client.post('/api/analyze', json={'text':'PRIVATE_CANARY', 'language':'PRIVATE_CANARY'})
         assert response.status_code == 422

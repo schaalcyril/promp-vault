@@ -59,12 +59,8 @@ spec:
         - name: http
           containerPort: 8000
         env:
-        - name: OIDC_CA_FILE
-          value: /etc/prompt-vault/ca/keycloak-local-ca.crt
         - name: APP_CONFIG_FILE
           value: /etc/prompt-vault/application.json
-        - name: LOCAL_ADMIN_CREDENTIALS_FILE
-          value: /run/secrets/superadmin.json
         - name: PYTHONDONTWRITEBYTECODE
           value: '1'
         securityContext:
@@ -98,22 +94,13 @@ spec:
             port: http
           periodSeconds: 10
         volumeMounts:
-        - name: oidc-ca
-          mountPath: /etc/prompt-vault/ca
-          readOnly: true
         - name: tmp
           mountPath: /tmp
         - name: application
           mountPath: /etc/prompt-vault/application.json
           subPath: application.json
           readOnly: true
-        - name: superadmin
-          mountPath: /run/secrets
-          readOnly: true
       volumes:
-      - name: oidc-ca
-        configMap:
-          name: prompt-vault-oidc-ca
       - name: tmp
         emptyDir:
           medium: Memory
@@ -121,10 +108,6 @@ spec:
       - name: application
         configMap:
           name: prompt-vault-config
-      - name: superadmin
-        secret:
-          secretName: prompt-vault-superadmin
-          defaultMode: 288
       imagePullSecrets:
       - name: gitlab-registry
 ---

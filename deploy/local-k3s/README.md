@@ -1,7 +1,8 @@
 # Keycloak de test sur K3s local
 
-Cette instance accompagne Prompt Vault sur le poste, indépendamment du déploiement
-applicatif de la pipeline. Elle ne convient pas à une exploitation en production.
+Instance historique de test, désormais indépendante : Prompt Vault ne l’utilise plus.
+Ces fichiers sont conservés comme référence pour l’instance existante, sans déploiement
+par la pipeline applicative. Elle ne convient pas à une exploitation en production.
 
 - Namespace : `prompt-vault`.
 - Console : `https://prompt-vault.home.arpa/auth/admin/`.
@@ -56,6 +57,5 @@ assure qu’un seul pod utilise cette configuration de test.
 Après modification du realm ou des Secrets, redémarrer `deployment/keycloak-local`.
 Ne pas utiliser cette procédure avec une instance contenant des données à conserver.
 
-Le déploiement de Prompt Vault reste distinct : configurer son issuer ci-dessus et
-la confiance envers cette CA pour ses accès OIDC HTTPS, puis vérifier le login
-complet après déploiement de l’application. Ne pas désactiver la vérification TLS.
+Prompt Vault fonctionne désormais en accès direct, sans issuer ni configuration OIDC.
+Le certificat HTTPS applicatif reste utilisé indépendamment de Keycloak.

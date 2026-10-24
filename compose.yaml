@@ -2,9 +2,7 @@ services:
   api:
     build: ./backend
     environment:
-      ALLOW_INSECURE_OIDC: 'true'
       APP_CONFIG_FILE: /etc/prompt-vault/application.json
-      LOCAL_ADMIN_CREDENTIALS_FILE: /run/secrets/superadmin.json
     restart: 'no'
     mem_limit: 4g
     read_only: true
@@ -16,14 +14,8 @@ services:
     - ALL
     volumes:
     - type: bind
-      source: ./.local/application.json
+      source: ./config/application.local.json
       target: /etc/prompt-vault/application.json
-      read_only: true
-      bind:
-        create_host_path: false
-    - type: bind
-      source: ./.local/superadmin.json
-      target: /run/secrets/superadmin.json
       read_only: true
       bind:
         create_host_path: false
@@ -33,21 +25,3 @@ services:
     - 127.0.0.1:3080:80
     depends_on:
     - api
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.8.0
-    command:
-    - start-dev
-    - --import-realm
-    environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: keycloak-admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: "${KC_BOOTSTRAP_ADMIN_PASSWORD:?Ex\xE9cuter python3\
-        \ scripts/setup-keycloak.py}"
-      KC_HTTP_RELATIVE_PATH: /auth
-      KC_HOSTNAME: http://localhost:3080/auth
-      KC_HTTP_ENABLED: 'true'
-    volumes:
-    - ./.local/realm.json:/opt/keycloak/data/import/realm.json:ro
-    - keycloak-data:/opt/keycloak/data
-    mem_limit: 1g
-volumes:
-  keycloak-data: null

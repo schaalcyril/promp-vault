@@ -1,17 +1,14 @@
 import RestorationSummary from './RestorationSummary';
 import LanguageChoice from './LanguageChoice';
-import AdminNetworks from './AdminNetworks';
+import ActiveRules from './ActiveRules';
 import {useRef,useState,useMemo} from 'react';
 import DetectionReview from './DetectionReview';
-import SystemSettings from './SystemSettings';
-import AdminRules from './AdminRules';
-import {authorizedFetch,isRecovery,isAdmin,username,logout,appConfig} from './auth';
+import {appConfig} from './api';
 import {Session,type Hit} from './session';
 const demo='Bonjour,\n\nJean Dupont ne peut pas joindre srv-prod-db01.client.local (10.20.30.15).\nLe compte utilisateur est jean.dupont.\npassword=SuperSecret123\n\nPostgreSQL écoute sur le port 5432. Comment diagnostiquer ce problème ?';
 export default function App(){
  const [dark,setDark]=useState(matchMedia('(prefers-color-scheme: dark)').matches);
- const [adminOpen,setAdminOpen]=useState(false),[adminVisited,setAdminVisited]=useState(false),[adminPage,setAdminPage]=useState('rules');
- const [adminSession,setAdminSession]=useState(0);
+ const [rulesOpen,setRulesOpen]=useState(location.pathname==='/regles');
  const [tab,setTab]=useState('analyze'); const [text,setText]=useState('');
  const [hits,setHits]=useState<Hit[]>([]); const [disabled,setDisabled]=useState<Set<number>>(new Set());
  const [output,setOutput]=useState(''); const [reply,setReply]=useState('');
@@ -45,7 +42,7 @@ export default function App(){
  }
  async function analyze(){
   const controller=new AbortController();request.current=controller;setBusy(true);setValid(false);setHits([]);setOutput('');setProgress(0);setLanguageReport('');setStatus('Démarrage de l’analyse…');
-  try {const res=await authorizedFetch('/api/analyze-stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,language}),signal:controller.signal});
+  try {const res=await fetch('/api/analyze-stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,language}),signal:controller.signal});
    if(!res.ok){let detail='Service indisponible. Réessayez dans quelques instants.';try{const error=await res.json();detail=error.detail||detail;}catch{}throw new Error(detail);}
    const reader=res.body!.getReader();const decoder=new TextDecoder();let buffer='',completed=false;
    while(true){const {value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});
@@ -62,16 +59,16 @@ export default function App(){
   }catch(error){if(!controller.signal.aborted)setStatus(error instanceof Error?error.message:'Analyse impossible');}
   finally{if(request.current===controller)setBusy(false);}
  }
- function clear(){setAdminSession(value=>value+1);stopTransform();request.current?.abort();session.current=new Session();setMappingRevision(value=>value+1);setText('');setLanguageReport('');setHits([]);setOutput('');setReply('');setDisabled(new Set());setBusy(false);setValid(false);setStatus('Session effacée');}
+ function clear(){stopTransform();request.current?.abort();session.current=new Session();setMappingRevision(value=>value+1);setText('');setLanguageReport('');setHits([]);setOutput('');setReply('');setDisabled(new Set());setBusy(false);setValid(false);setStatus('Session effacée');}
  function manual(){const el=input.current;if(!el||el.selectionStart===el.selectionEnd)return;const start=Array.from(text.slice(0,el.selectionStart)).length;const end=Array.from(text.slice(0,el.selectionEnd)).length;
   const next=hits.filter(h=>h.end<=start||h.start>=end);next.push({start,end,category:'MANUAL',secret:true,reason:'Masquage manuel, non restaurable par précaution'});next.sort((a,b)=>a.start-b.start);setHits(next);setDisabled(new Set());void render(next,new Set());
  }
  async function copy(value:string){try{await navigator.clipboard.writeText(value);setStatus('Texte copié');}catch{setStatus('Copie refusée par le navigateur');}}
- return <div className={dark?'shell dark':'shell'}><header><div className="brand"><span className="logo">PV</span><strong>Prompt Vault</strong><span className="badge">CONFIGURATION DÉPLOYÉE</span></div><div className="header-actions">{isAdmin()&&<button className={adminOpen?'workspace-switch active':'workspace-switch'} aria-pressed={adminOpen} onClick={()=>{setAdminOpen(!adminOpen);setAdminVisited(true);}}>{adminOpen?'← Espace de travail':'Administration'}</button>}<span className="account-label">{username()} · {isRecovery()?'Super administrateur':isAdmin()?'Administrateur des règles':'Utilisateur'}</span><button onClick={()=>{clear();void logout().catch(error=>setStatus(error.message));}}>Se déconnecter</button><button onClick={()=>setDark(!dark)}>{dark?'☀ Clair':'☾ Sombre'}</button></div></header>
- <main><div className="intro"><div><p className="eyebrow">{adminOpen?'PARAMÉTRAGE · RÉFÉRENTIELS':'ESPACE DE TRAVAIL'}</p><h1>{adminOpen?'Administration':'Votre expertise, sans vos secrets.'}</h1><p>{adminOpen?'Consultez et testez la configuration livrée au déploiement.':'Préparez vos prompts et gardez la maîtrise des informations partagées.'}</p></div>{!adminOpen&&<button onClick={clear}>Effacer la session</button>}</div>
- <div className="notice">{isRecovery()?'Super administrateur local · Session limitée à 30 minutes.':'Connexion Keycloak · Configuration et règles gérées au déploiement.'}</div>
- {adminVisited&&isAdmin()&&<div hidden={!adminOpen} className="administration-space"><nav className="administration-nav" aria-label="Rubriques d’administration"><span className="nav-label">ADMINISTRATION</span><button className={adminPage==='rules'?'active':''} aria-current={adminPage==='rules'?'page':undefined} onClick={()=>setAdminPage('rules')}>Règles globales</button><button className={adminPage==='networks'?'active':''} aria-current={adminPage==='networks'?'page':undefined} onClick={()=>setAdminPage('networks')}>Réseaux et VLAN</button>{isRecovery()&&<><span className="nav-label system-label">SYSTÈME</span><button className={adminPage==='system'?'active':''} aria-current={adminPage==='system'?'page':undefined} onClick={()=>setAdminPage('system')}>Configuration système</button></>}</nav><div className="administration-content"><div hidden={adminPage!=='rules'}><AdminRules key={adminSession}/></div><div hidden={adminPage!=='networks'}><AdminNetworks key={'networks'+adminSession}/></div>{isRecovery()&&<div hidden={adminPage!=='system'}><SystemSettings key={'system'+adminSession}/></div>}</div></div>}
- <div hidden={adminOpen}><nav className="work-nav" aria-label="Actions sur les textes"><button className={tab==='analyze'?'active':''} aria-current={tab==='analyze'?'page':undefined} onClick={()=>setTab('analyze')}>Protéger un texte</button><button className={tab==='restore'?'active':''} aria-current={tab==='restore'?'page':undefined} onClick={()=>setTab('restore')}>Restaurer une réponse</button></nav>
+ return <div className={dark?'shell dark':'shell'}><header><div className="brand"><span className="logo">PV</span><strong>Prompt Vault</strong><span className="badge">CONFIGURATION DÉPLOYÉE</span></div><div className="header-actions"><button className={rulesOpen?'workspace-switch active':'workspace-switch'} aria-pressed={rulesOpen} onClick={()=>setRulesOpen(!rulesOpen)}>{rulesOpen?'← Espace de travail':'Règles actives'}</button><button onClick={()=>setDark(!dark)}>{dark?'☀ Clair':'☾ Sombre'}</button></div></header>
+ <main><div className="intro"><div><p className="eyebrow">{rulesOpen?'CONFIGURATION DÉPLOYÉE':'ESPACE DE TRAVAIL'}</p><h1>{rulesOpen?'Règles actives':'Votre expertise, sans vos secrets.'}</h1><p>{rulesOpen?'Consultez les protections appliquées à vos textes.':'Préparez vos prompts et gardez la maîtrise des informations partagées.'}</p></div>{!rulesOpen&&<button onClick={clear}>Effacer la session</button>}</div>
+ <div className="notice">Accès direct · Règles gérées au déploiement.</div>
+ {rulesOpen&&<ActiveRules/>}
+ <div hidden={rulesOpen}><nav className="work-nav" aria-label="Actions sur les textes"><button className={tab==='analyze'?'active':''} aria-current={tab==='analyze'?'page':undefined} onClick={()=>setTab('analyze')}>Protéger un texte</button><button className={tab==='restore'?'active':''} aria-current={tab==='restore'?'page':undefined} onClick={()=>setTab('restore')}>Restaurer une réponse</button></nav>
  {tab==='analyze'?<><div className="toolbar analysis-toolbar"><LanguageChoice disabled={busy} value={language} onChange={value=>{setLanguage(value);setLanguageReport('');setValid(false);setHits([]);setOutput('');}}/><button onClick={()=>update(demo)}>Exemple fictif</button><span className="grow"/><span className="text-volume">{(bytes/1024).toFixed(1)} Ko / {appConfig.max_text_mib} Mio</span>{busy?<button onClick={()=>{stopTransform();request.current?.abort();setBusy(false);setStatus('Analyse annulée — arrêt du calcul serveur demandé.');}}>Annuler</button>:<button className="primary" disabled={!text||bytes>appConfig.max_text_mib*1048576} onClick={analyze}>Analyser le texte →</button>}</div>
 
  {languageReport&&<p role="status" className="notice">{languageReport}</p>}

@@ -1,16 +1,3 @@
-import pytest
-from app.auth import current_user
-
-@pytest.fixture(autouse=True)
-def authenticated_job_tests(monkeypatch):
-    from app.main import app
-    from app.rule_store import active_rules
-    app.dependency_overrides[active_rules]=lambda:[]
-    app.dependency_overrides[current_user]=lambda:{"id":"synthetic","roles":["user"]}
-    yield
-    app.dependency_overrides.pop(current_user,None)
-    app.dependency_overrides.pop(active_rules,None)
-
 import time
 import multiprocessing as mp
 from app.jobs import start,stop
