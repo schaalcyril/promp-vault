@@ -2,6 +2,8 @@ fastapi==0.115.12
 uvicorn==0.34.2
 presidio-analyzer==2.2.358
 spacy==3.8.7
+# preshed 3.0.14 raises OverflowError with spaCy 3.8.7 tokenizers.
+preshed==3.0.13
 detect-secrets==1.5.0
 pytest==8.3.5
 httpx==0.28.1
