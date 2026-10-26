@@ -40,4 +40,4 @@ Pic RSS du processus d’évaluation : 322.7 Mio. Latence médiane des courts sc
 - Règles lexicales non équivalentes à un parseur complet JSON/YAML/XML ; contenus encodés, structures atypiques et cas malformés nécessitent davantage de tests.
 - Un chevauchement de secrets réellement ambigu reste masqué sur toute son étendue par précaution.
 - La cible de 10 Mio, la progression et l’annulation réelle côté serveur restent à valider/implémenter.
-- Keycloak, PostgreSQL et administration ne font pas partie de ce correctif.
+- Note historique : la version actuelle ne nécessite plus Keycloak, PostgreSQL ni interface d’administration.

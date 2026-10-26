@@ -26,7 +26,7 @@ Le job sélectionne le contexte et configure la confiance TLS vers KAS.
 4. Configurer DNS et confiance TLS du navigateur, de DinD et de containerd/K3s.
 5. Adapter `config/application.json` : langue, taille, règles et réseaux.
 
-Sur ce poste, DNS application et registre pointent vers `192.168.1.63`.
+Sur ce poste, DNS application et registre pointent vers `10.254.254.1` sur l’interface persistante `lab0`, indépendante du Wi-Fi.
 Le registre est `registry.gitlab.home.arpa:5005`. Les fichiers de confiance K3s sont
 `/etc/rancher/k3s/registries.yaml` et `/etc/rancher/k3s/registry-ca.crt`.
 Le runner utilise DinD TLS, jobs non privilégiés et privilèges réservés au service DinD.
@@ -65,8 +65,7 @@ sans connexion. Le catalogue public ne révèle pas les termes ou expressions pe
 
 Déployer ensemble les nouvelles images et le JSON sans champs OIDC. Les anciens
 Secrets `prompt-vault-superadmin` et ConfigMap `prompt-vault-oidc-ca` ne sont plus montés.
-La pipeline ne supprime pas automatiquement les anciennes ressources ni le Keycloak
-indépendant. Ne pas retirer `prompt-vault-local-tls` ni `gitlab-registry`.
+La pipeline ne supprime pas automatiquement les anciennes ressources ni les ressources du projet Keycloak indépendant (`infra/keycloak`). Ne pas retirer `prompt-vault-local-tls` ni `gitlab-registry`.
 
 Après le job, vérifier l’ouverture directe de l’application, la page Règles actives,
 l’analyse d’un exemple et la restauration. `/api/health` doit indiquer `authentication: false`.

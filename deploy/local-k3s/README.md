@@ -1,61 +1,16 @@
-# Keycloak de test sur K3s local
+# Infrastructure K3s locale
 
-Instance historique de test, désormais indépendante : Prompt Vault ne l’utilise plus.
-Ces fichiers sont conservés comme référence pour l’instance existante, sans déploiement
-par la pipeline applicative. Elle ne convient pas à une exploitation en production.
+Prompt Vault ne nécessite ni authentification utilisateur ni base de données.
+Les manifests applicatifs et la procédure CI sont décrits dans [le guide de production](../production/README.md).
 
-- Namespace : `prompt-vault`.
-- Console : `https://prompt-vault.home.arpa/auth/admin/`.
-- Issuer : `https://prompt-vault.home.arpa/auth/realms/prompt-vault`.
-- Client public : `prompt-vault-web`, code d’autorisation avec PKCE S256.
-- Audience : `prompt-vault-api` ; rôles : `user` et `admin`.
-- Comptes de test : `utilisateur` et `administrateur` ; console : `keycloak-admin`.
+Ce dossier conserve uniquement les exemples et certificats publics nécessaires à l’infrastructure :
 
-## Fichiers et secrets
+- `agent-ci-access.example.yaml` : autorisation du projet auprès de l’agent GitLab.
+- `registries.example.yaml` : confiance TLS du registre pour containerd/K3s.
+- `registry-ca.crt` : certificat public du registre local ; à adapter à votre environnement.
 
-`keycloak.yaml` contient le Service, Deployment et Ingress Traefik HTTPS.
-`realm.json` contient le realm et des références aux variables d’environnement des
-mots de passe. Il ne contient aucun mot de passe réel.
+Le lab nomade utilise `10.254.254.1` sur l’interface persistante `lab0`, indépendamment du Wi-Fi.
+Les noms GitLab, registre et application doivent résoudre depuis le poste et les jobs/pods.
+Ne pas désactiver la vérification TLS ni publier les clés privées.
 
-Les valeurs privées générées sur le poste sont dans `.local/k3s/keycloak.env`
-(mode 0600) et le récapitulatif `.local/k3s/ACCES.md` (mode 0600). Elles sont
-exclues de Git. Le Secret `keycloak-local-credentials` contient les clés
-`KC_BOOTSTRAP_ADMIN_PASSWORD`, `TEST_USER_PASSWORD` et `TEST_ADMIN_PASSWORD`.
-Ne pas afficher ces valeurs dans les logs ou les placer dans la CI.
-
-Le certificat applicatif est signé par une CA locale de test. Le Secret TLS
-`prompt-vault-local-tls` contient le certificat et la clé. Le certificat public de
-la CA est `.local/k3s/ca.crt` ; importer uniquement ce fichier comme autorité de
-confiance dans le navigateur. Les fichiers `ca.key` et `tls.key` restent privés.
-Le certificat serveur expire après 90 jours et la CA après 365 jours.
-
-Sur le poste, ajouter la résolution `192.168.1.63 prompt-vault.home.arpa`
-(par exemple dans `/etc/hosts`). Le cluster utilise une entrée dédiée dans
-`kube-system/coredns-custom`. L’adresse du poste doit rester stable.
-
-## Reprise du déploiement
-
-Après création du namespace, des Secrets et de la ConfigMap du realm :
-
-```sh
-kubectl -n prompt-vault create configmap keycloak-local-realm \
-  --from-file=realm.json=deploy/local-k3s/realm.json --dry-run=client -o yaml | kubectl apply -f -
-kubectl apply -f deploy/local-k3s/keycloak.yaml
-kubectl -n prompt-vault rollout status deployment/keycloak-local
-```
-
-Les Secrets ont été créés séparément depuis les fichiers privés du poste.
-Ils ne sont pas recréés par ce manifeste et ne sont pas inclus dans Git.
-
-## Persistance et intégration
-
-La base embarquée est dans un `emptyDir` : le remplacement du pod efface les
-modifications effectuées dans la console et réimporte `realm.json`. Les comptes
-retrouvent alors les mots de passe conservés dans le Secret. Le mode `Recreate`
-assure qu’un seul pod utilise cette configuration de test.
-
-Après modification du realm ou des Secrets, redémarrer `deployment/keycloak-local`.
-Ne pas utiliser cette procédure avec une instance contenant des données à conserver.
-
-Prompt Vault fonctionne désormais en accès direct, sans issuer ni configuration OIDC.
-Le certificat HTTPS applicatif reste utilisé indépendamment de Keycloak.
+Le lab Keycloak est géré séparément dans le projet `infra/keycloak` ; aucun de ses composants ne doit être déployé depuis Prompt Vault.

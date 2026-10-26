@@ -36,4 +36,4 @@ Le test moteur de 10 Mio répétitifs termine désormais. Cela ne valide pas un 
 
 Les mesures de charge ne sont pas un corpus de précision : les 485 détections produites sur les logs variés ne sont pas toutes annotées ni validées. Elles doivent être examinées pour identifier les faux positifs sur les identifiants numériques avant d’étendre le pilote.
 
-Priorités : corpus indépendant plus représentatif, évaluation des faux positifs numériques, puis performances de bout en bout sur des contenus variés. Keycloak et administration restent des jalons distincts.
+Priorités : corpus indépendant plus représentatif, évaluation des faux positifs numériques, puis performances de bout en bout sur des contenus variés. La version actuelle utilise une configuration au déploiement, sans authentification ni interface d’administration.

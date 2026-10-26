@@ -58,4 +58,4 @@ Retirer de `settings` les champs issuer, internal_issuer, client_id, audience, u
 Conserver default_language, max_text_mib, les règles et réseaux existants. Les champs inconnus sont refusés.
 Déployer les nouvelles images avec la nouvelle configuration : les routes de connexion et d’administration sont supprimées.
 La CI ne demande plus `prompt-vault-superadmin` ni `prompt-vault-oidc-ca`.
-Les anciennes ressources et données du cluster ne sont pas supprimées automatiquement ; le Keycloak de test reste indépendant et inutilisé par l’application.
+Les anciennes ressources et données du cluster ne sont pas supprimées automatiquement. Le lab Keycloak est géré séparément dans `infra/keycloak` ; ce dépôt ne contient plus ses manifests ni son realm.
